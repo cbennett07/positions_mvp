@@ -57,9 +57,9 @@ class CreatePosition extends Component {
 
     render() {
         return (
-            <div className={'rounded-lg p-2 border-2 shadow-lg border-gray-700 p-1 m-1 bg-white'} align={"left"}>
-                <div className={"block text-gray-700 text-l font-bold mb-2 italic"}>Add Position<br/> <br/>
-                    <label className='block text-gray-700 text-sm font-bold mb-2'
+            <div className={'rounded-2xl w-80 p-2 h-1/4 border-2 shadow-2xl border-gray-700 p-1 m-10 bg-white'}>
+                <div className={"block text-gray-700 text-lg font-bold mb-2 h-120"}>Add Position<br/> <br/>
+                    <label className='text-left block text-gray-700 text-sm font-bold mb-2'
                            htmlFor={"txtTicker"}>Ticker (stock symbol): </label>
                     <input
                         className={'shadow appearance-none border border-blue-500 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
@@ -72,11 +72,11 @@ class CreatePosition extends Component {
                     />
                 </div>
                 <div>
-                    <div>
-                        <label className='block text-gray-700 text-sm font-bold mb-2'
+                    <div className={"text-left"}>
+                        <label className='text-left block text-gray-700 text-sm font-bold mb-2'
                                htmlFor={"txtShares"}>Number of Shares: </label>
                         <input
-                            className={'shadow appearance-none border border-blue-500 rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
+                            className={'shadow appearance-none border border-blue-500 rounded w-20 py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
                             id={"txtShares"}
                             type={"text"}
                             value={this.state.shares}
@@ -86,7 +86,7 @@ class CreatePosition extends Component {
                         />
                     </div>
                 </div>
-                <div>
+                <div className={"text-left"}>
                     <label className='block text-gray-700 text-sm font-bold mb-2'
                            htmlFor={"txtPrice"}>Price at purchase (in USD): </label>
                     <input
@@ -100,7 +100,8 @@ class CreatePosition extends Component {
                         }}
 
                     /></div>
-                <div><label className='block text-gray-700 text-sm font-bold mb-2'
+                <div className={"text-left"}>
+                    <label className='block text-gray-700 text-sm font-bold mb-2'
                             htmlFor={"txtPDate"}>Purchase date: (yyyy-MM-dd HH:mm:ss) </label>
                     <input
                         className={'shadow appearance-none border border-blue-500 rounded w-60 py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
@@ -119,15 +120,8 @@ class CreatePosition extends Component {
                             className={'bg-blue-500 rounded hover:bg-blue-700 text-white w-20 shadow-md p-1'}
                     >Submit
                     </button>
-
                 </div>
-
-            </div>
-
-
-        )
-
-
+            </div>)
     }
 }
 

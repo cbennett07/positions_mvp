@@ -6,14 +6,15 @@ class Position extends Component {
     constructor(props){
         super(props)
         this.state={
-            position: props.position,
-            id: props.position.id,
-            ticker: props.position.ticker,
-            shares: props.position.shares,
-            price: props.position.price,
-            purchaseDate: props.position.purchaseDate,
+            position: this.props.position,
+            id: this.props.positionId,
+            ticker: this.props.position.ticker,
+            shares: this.props.position.shares,
+            price: this.props.position.price,
+            purchaseDate: this.props.position.purchaseDate,
             localResponse: {},
             companyName: '',
+
         };
     }
 
@@ -23,16 +24,19 @@ class Position extends Component {
 
      fetchCurrentValue(){
          // GET CURRENT STOCK VALUE
-         // will retrieve and set ticker value here
+         // will retrieve response from API and put into localResponse in state
         let reqURL =    "https://www.alphavantage.co/query" +
                         "?function=TIME_SERIES_INTRADAY&symbol=" + this.state.ticker +
                         "&interval=5min&apikey=RNLIQB6QILDNRPVZ";
         axios.get(reqURL,()=>{})
+            //.then(response=>console.log(response.data))
             .then(response=>{this.setState({localResponse : response.data})})
+            //add currentValue to table for recall
+            .then(()=>this.addToCurrentValueTable())
             .finally(()=>{this.props.fetchPositions()});
 
          // GET COMPANY INFO
-         // will retrieve and set ticker value here
+         // will retrieve and set company name in state
          console.log("making call to API");
          let infoURL =      "https://www.alphavantage.co/query" +
                             "?function=OVERVIEW&symbol=" + this.state.ticker +
@@ -93,25 +97,37 @@ class Position extends Component {
     handleDeleteClicked(){
         console.log("trying to delete position: " + this.state.ticker);
         axios.delete("http://localhost:3001/position/" + this.state.id, ()=>{})
-            .then(()=>this.props.fetchPositions())
+            //.then(this.props.fetchPositions())
             .catch((()=>console.log("delete did not work")))
             .finally(this.props.fetchPositions());
 
     }
+    addToCurrentValueTable(){
+        let closeStr = Object.entries(this.state.localResponse["Time Series (5min)"])[0][1]["4. close"]
+        let postVar={
+            positionId: this.props.positionId,
+            ticker: this.props.position.ticker,
+            currentValue: (closeStr * this.state.shares)
+        }
+        //post currentValue, ticker, and positionId to my CurrentValue db
+        axios.post("http://localhost:3001/currentValue/", postVar)
+            .then(()=>console.log("posted new currentValue: " + postVar.currentValue))
+            .catch(()=>console.log("DID NOT POST!"));
+
+    }
 
     render() {
-
         return (
-            <div>
-                <div className={'rounded-lg w-80 p-2 border-2 shadow-lg border-gray-700 p-1 m-1 bg-white'} align={"left"}>
+                <div className={'flex-column rounded-2xl w-80 p-2 border-2 shadow-2xl border-gray-700 p-1 m-1 bg-white'} >
                    <div className='block text-gray-700 text-sm font-bold mb-2'>
-                       Company:<br /><font className={"underline text-xl"}>{this.state.companyName}</font>
+                       Company:<br />
+                       <div className={"underline text-xl"}>{this.state.companyName}</div>
                    </div>
 
-                    <div>
+                    <div className={'flex-column'}>
                         <label  className='block text-gray-700 text-sm font-bold mb-2'
                                 htmlFor={"txtId" + this.state.id} >Ticker: </label>
-                        <input className={'shadow appearance-none border border-blue-500 rounded w-60 py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
+                        <input className={'text-lg shadow appearance-none border border-blue-500 rounded w-20 py-2 px-3 shadow-2xl text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
                                id={"txtId" + this.state.id}
                                type={"text"} value={this.state.ticker}
                                onChange={(e)=>{this.onChangeTickerName(e)}}
@@ -121,7 +137,7 @@ class Position extends Component {
                         <div>
                         <label className='block text-gray-700 text-sm font-bold mb-2'
                                htmlFor={"txtSh" + this.state.id} >Number of Shares (00.00): </label>
-                        <input className={'shadow appearance-none border border-blue-500 rounded w-60 py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
+                        <input className={'text-lg shadow appearance-none border border-blue-500 rounded w-20 py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
                                type={"text"}
                                id={"txtSh" + this.state.id}
                                onChange={(e) => {this.onChangeSharesAmount(e)}}
@@ -132,7 +148,7 @@ class Position extends Component {
                     <div>
                         <label className='block text-gray-700 text-sm font-bold mb-2'
                                htmlFor={"txtPrice" + this.state.id} >Price ($0.00 in USD): </label>
-                        <input className={'shadow appearance-none border border-blue-500 rounded w-60 py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
+                        <input className={'text-lg shadow appearance-none border border-blue-500 rounded w-20 py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
                                size="5"
                                id={"txtPrice" + this.state.id}
                                type={"text"}
@@ -142,7 +158,7 @@ class Position extends Component {
                         /></div>
                     <div><label className='block text-gray-700 text-sm font-bold mb-2'
                                 htmlFor={"txtDate" + this.state.id} >Purchase date: (yyyy-MM-dd HH:mm:ss)</label>
-                        <input  className={'shadow appearance-none border border-blue-500 rounded w-60 py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
+                        <input  className={'text-lg shadow appearance-none border border-blue-500 rounded w-60 py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline'}
                                 size="5"
                                 id={"txtDate" + this.state.id}
                                 type={"text"}
@@ -161,22 +177,24 @@ class Position extends Component {
                                                  origPositionTotal={this.state.shares*this.state.price}
                                                  origPrice={this.state.price}
                                                  addToCurrentValue={this.props.addToCurrentValue}
+                                                 currentValueId={this.state.id}
+                                                 ticker={this.state.ticker}
                                 />
                             </div>
                     <div className="m-2">   &nbsp;&nbsp;&nbsp;&nbsp;
                         <button onClick={()=>(this.handleSubmitUpdateClicked())}
-                                className={'bg-blue-500 rounded hover:bg-blue-700 text-white w-20 shadow-md p-1'}
+                                className={'bg-blue-500 rounded hover:bg-blue-700 text-white text-lg w-20 shadow-md p-1'}
                         >Update</button>
                                             &nbsp;&nbsp;&nbsp;&nbsp;
                                             &nbsp;&nbsp;&nbsp;&nbsp;
                                             &nbsp;&nbsp;&nbsp;&nbsp;
                                             &nbsp;&nbsp;&nbsp;&nbsp;
                         <button onClick={()=>(this.handleDeleteClicked())}
-                                className={'bg-blue-500 rounded hover:bg-red-700 text-white w-20 shadow-md p-1'}
+                                className={'bg-blue-500 rounded hover:bg-red-700 text-white text-lg w-20 shadow-md p-1'}
                         >Delete</button>
                     </div>
                 </div>
-            </div>
+
         )
     }
 }
